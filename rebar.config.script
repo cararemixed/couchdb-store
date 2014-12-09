@@ -10,110 +10,15 @@
 %% License for the specific language governing permissions and limitations under
 %% the License.
 
-CopyIfDifferent = fun(Path, Contents) ->
-    case filelib:is_file(Path) of
-        true ->
-            case file:read_file(Path) of
-                {ok, Contents} ->
-                    ok;
-                _ ->
-                    file:write_file(Path, Contents)
-            end;
-        false ->
-            file:write_file(Path, Contents)
-    end
-end,
+{ok, UserConfig} = file:consult("user.config").
 
+UserPortsEnv = proplists:get_value(port_env, UserConfig, []).
+RebarPortsEnv = proplists:get_value(port_env, CONFIG).
 
-CouchJSName = case os:type() of
-    {win32, _} ->
-        "couchjs.exe";
-    _ ->
-        "couchjs"
-end,
-CouchJSPath = filename:join(["priv", CouchJSName]),
-Version = string:strip(os:cmd("git describe --always"), right, $\n),
-
-CouchConfig = case filelib:is_file(os:getenv("COUCHDB_CONFIG")) of
-    true ->
-        {ok, Result} = file:consult(os:getenv("COUCHDB_CONFIG")),
-        Result;
-    false ->
-        []
-end.
-
-ConfigH = [
-    {"SM185", ""},
-    {"HAVE_JS_GET_STRING_CHARS_AND_LENGTH", "1"},
-    {"JSSCRIPT_TYPE", "JSObject*"},
-    {"COUCHJS_NAME", "\"" ++ CouchJSName++ "\""},
-    {"PACKAGE", "\"apache-couchdb\""},
-    {"PACKAGE_BUGREPORT", "\"https://issues.apache.org/jira/browse/COUCHDB\""},
-    {"PACKAGE_NAME", "\"Apache CouchDB\""},
-    {"PACKAGE_STRING", "\"Apache CouchDB " ++ Version ++ "\""},
-    {"PACKAGE_VERSION", "\"" ++ Version ++ "\""}
-],
-
-CouchJSConfig = "priv/couch_js/config.h",
-ConfigSrc = [["#define ", K, " ", V, $\n] || {K, V} <- ConfigH],
-ConfigBin = iolist_to_binary(ConfigSrc),
-ok = CopyIfDifferent(CouchJSConfig, ConfigBin),
-
-{JS_CFLAGS, JS_LDFLAGS} = case lists:keyfind(with_curl, 1, CouchConfig) of
-    {with_curl, true} ->
-        {"-DHAVE_CURL ", "-DHAVE_CURL -lmozjs185 -lcurl"};
-    _ ->
-        {"", "-lmozjs185"}
-end,
-
-CouchJSSrc = ["priv/couch_js/*.c"],
-
-IcuPath = "priv/couch_icu_driver.so",
-IcuSrc = ["priv/icu_driver/*.c"],
-IcuEnv = [{"DRV_CFLAGS",  "$DRV_CFLAGS -DPIC -O2 -fno-common"},
-          {"DRV_LDFLAGS", "$DRV_LDFLAGS -lm -licuuc -licudata -licui18n -lpthread"}],
-IcuDarwinEnv = [{"CFLAGS", "-DXP_UNIX -I/usr/local/opt/icu4c/include"},
-                {"LDFLAGS", "-L/usr/local/opt/icu4c/lib"}],
-IcuBsdEnv = [{"CFLAGS", "-DXP_UNIX -I/usr/local/include"},
-             {"LDFLAGS", "-L/usr/local/lib"}],
-ComparePath = "priv/couch_ejson_compare.so",
-CompareSrc = ["priv/couch_ejson_compare/*.c"],
-
-BaseSpecs = [
-        %% couchjs
-        {"darwin", CouchJSPath, CouchJSSrc, [{env, [{"CFLAGS", JS_CFLAGS ++ "-DXP_UNIX -I/usr/local/include/js"}, {"LDFLAGS", JS_LDFLAGS}]}]},
-        {"linux",  CouchJSPath, CouchJSSrc, [{env, [{"CFLAGS", JS_CFLAGS ++ "-DXP_UNIX -I/usr/include/js"}, {"LDFLAGS", JS_LDFLAGS ++ " -lm"}]}]},
-        {"bsd",   CouchJSPath, CouchJSSrc, [{env, [{"CFLAGS", JS_CFLAGS ++ "-DXP_UNIX -I/usr/local/include/js"}, {"LDFLAGS", JS_LDFLAGS ++ " -L/usr/local/lib -lm"}]}]},
-        {"win32",  CouchJSPath, CouchJSSrc, [{env, [{"CFLAGS", JS_CFLAGS ++ "-DXP_WIN -I/usr/include/js"}, {"LDFLAGS", JS_LDFLAGS}]}]},
-        % ICU
-        {"darwin", IcuPath, IcuSrc, [{env, IcuEnv ++ IcuDarwinEnv}]},
-        {"linux",  IcuPath, IcuSrc, [{env, IcuEnv}]},
-        {"bsd",   IcuPath, IcuSrc, [{env, IcuEnv ++ IcuBsdEnv}]},
-        {"win32",  IcuPath, IcuSrc, [{env, IcuEnv}]},
-        % ejson_compare
-        {"darwin", ComparePath, CompareSrc, [{env, IcuEnv ++ IcuDarwinEnv}]},
-        {"linux",  ComparePath, CompareSrc, [{env, IcuEnv}]},
-        {"bsd",   ComparePath, CompareSrc, [{env, IcuEnv ++ IcuBsdEnv}]},
-        {"win32",  ComparePath, CompareSrc, [{env, IcuEnv}]}
-],
-
-SpawnSpec = [
-    {"priv/couchspawnkillable", ["priv/spawnkillable/*.c"]}
-],
-
-PortSpecs = case os:type() of
-    {win32, _} ->
-        BaseSpecs ++ SpawnSpec;
-    _ ->
-        {ok, CSK} = file:read_file("priv/spawnkillable/couchspawnkillable.sh"),
-        ok = CopyIfDifferent("priv/couchspawnkillable", CSK),
-        os:cmd("chmod +x priv/couchspawnkillable"),
-        BaseSpecs
-end,
-
-AddConfig = [{port_specs, PortSpecs}].
-
-lists:foldl(fun({K, V}, CfgAcc) ->
-    lists:keystore(K, 1, CfgAcc, {K, V})
-end, CONFIG, AddConfig).
-
+lists:foldl(fun
+    (port_env, Config) ->
+        FinalPortsEnv = UserPortsEnv ++ RebarPortsEnv,
+        lists:keystore(port_env, 1, Config, {port_env, FinalPortsEnv});
+    (_, Config) ->
+        Config
+end, CONFIG, [port_env]).

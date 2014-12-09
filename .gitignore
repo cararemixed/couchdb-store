@@ -2,6 +2,7 @@
 *.so
 ebin/
 
+user.config
 priv/couch_js/config.h
 priv/couchjs
 priv/couchspawnkillable
