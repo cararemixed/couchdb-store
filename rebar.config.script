@@ -11,8 +11,8 @@
 %% the License.
 
 UserConfig = case file:consult("user.config") of
-	{ok, UserConfig} -> UserConfig;
-	_ -> []
+    {ok, Config} -> Config;
+    _ -> []
 end.
 
 UserPortsEnv = proplists:get_value(port_env, UserConfig, []).
