@@ -10,7 +10,10 @@
 %% License for the specific language governing permissions and limitations under
 %% the License.
 
-{ok, UserConfig} = file:consult("user.config").
+UserConfig = case file:consult("user.config") of
+	{ok, UserConfig} -> UserConfig;
+	_ -> []
+end.
 
 UserPortsEnv = proplists:get_value(port_env, UserConfig, []).
 RebarPortsEnv = proplists:get_value(port_env, CONFIG).
