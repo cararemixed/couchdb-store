@@ -36,7 +36,7 @@
 
         % ASF deps
         b64url,
-        couch_httpd
+        couch_httpd,
         couch_log,
         couch_event,
         ioq,
