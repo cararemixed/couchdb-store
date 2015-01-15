@@ -33,7 +33,7 @@
 -export([load_validation_funs/1]).
 -export([check_md5/2, with_stream/3]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 -define(VALID_DB_NAME, "^[a-z][a-z0-9\\_\\$()\\+\\-\\/]*$").
 

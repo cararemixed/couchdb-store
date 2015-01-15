@@ -64,7 +64,7 @@ remove_leafs/2,
 stem/2
 ]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 -type treenode() :: {Key::term(), Value::term(), [Node::treenode()]}.
 -type tree() :: {Depth::pos_integer(), [treenode()]}.
 -type revtree() :: [tree()].

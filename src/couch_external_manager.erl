@@ -21,7 +21,7 @@
 % config_listener api
 -export([handle_config_change/5]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 start_link() ->
     gen_server:start_link({local, couch_external_manager},

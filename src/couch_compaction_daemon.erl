@@ -24,7 +24,7 @@
 % config_listener api
 -export([handle_config_change/5]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 -include_lib("kernel/include/file.hrl").
 
 -define(CONFIG_ETS, couch_compaction_daemon_config).

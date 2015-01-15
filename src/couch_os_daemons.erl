@@ -21,7 +21,7 @@
 % config_listener api
 -export([handle_config_change/5]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 -record(daemon, {
     port,
@@ -288,12 +288,12 @@ handle_log_message(Name, Msg, Level) ->
 reload_daemons(Table) ->
     % List of daemons we want to have running.
     Configured = lists:sort(config:get("os_daemons")),
-    
+
     % Remove records for daemons that were halted.
     MSpecHalted = #daemon{name='$1', cmd='$2', status=halted, _='_'},
     Halted = lists:sort([{N, C} || [N, C] <- ets:match(Table, MSpecHalted)]),
     ok = stop_os_daemons(Table, find_to_stop(Configured, Halted, [])),
-    
+
     % Stop daemons that are running
     % Start newly configured daemons
     MSpecRunning = #daemon{name='$1', cmd='$2', status=running, _='_'},
@@ -321,7 +321,7 @@ restart_daemons(Table, Sect, Key, Port) ->
             ok
     end,
     restart_daemons(Table, Sect, Key, ets:next(Table, Port)).
-    
+
 
 stop_os_daemons(_Table, []) ->
     ok;
@@ -337,14 +337,14 @@ stop_os_daemons(Table, [{Name, Cmd} | Rest]) ->
             true = ets:insert(Table, D2)
     end,
     stop_os_daemons(Table, Rest).
-    
+
 boot_os_daemons(_Table, []) ->
     ok;
 boot_os_daemons(Table, [{Name, Cmd} | Rest]) ->
     {ok, Port} = start_port(Cmd),
     true = ets:insert(Table, #daemon{port=Port, name=Name, cmd=Cmd}),
     boot_os_daemons(Table, Rest).
-    
+
 % Elements unique to the configured set need to be booted.
 find_to_boot([], _Rest, Acc) ->
     % Nothing else configured.

@@ -24,7 +24,7 @@
 -export([is_deleted/1]).
 -export([num_mp_writers/1]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 -spec to_path(#doc{}) -> path().
 to_path(#doc{revs={Start, RevIds}}=Doc) ->

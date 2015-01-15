@@ -26,8 +26,8 @@
 -export([handle_config_change/5]).
 -export([handle_db_event/3]).
 
--include_lib("couch/include/couch_db.hrl").
--include_lib("couch/include/couch_js_functions.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_js_functions.hrl").
 
 -define(STATE, auth_state_ets).
 -define(BY_USER, auth_by_user_ets).

@@ -14,7 +14,7 @@
 -behaviour(gen_server).
 -vsn(1).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 % public API
 -export([new/1, queue/2, dequeue/1, dequeue/2, close/1, item_count/1, size/1]).
@@ -49,7 +49,7 @@ queue(Wq, Item) ->
 dequeue(Wq) ->
     dequeue(Wq, all).
 
-    
+
 dequeue(Wq, MaxItems) ->
     try
         gen_server:call(Wq, {dequeue, MaxItems}, infinity)
@@ -76,7 +76,7 @@ size(Wq) ->
 
 close(Wq) ->
     gen_server:cast(Wq, close).
-    
+
 
 init(Options) ->
     Q = #q{
@@ -90,7 +90,7 @@ init(Options) ->
 terminate(_Reason, #q{work_waiters=Workers}) ->
     lists:foreach(fun({W, _}) -> gen_server:reply(W, closed) end, Workers).
 
-    
+
 handle_call({queue, Item, Size}, From, #q{work_waiters = []} = Q0) ->
     Q = Q0#q{size = Q0#q.size + Size,
                 items = Q0#q.items + 1,
@@ -172,7 +172,7 @@ dequeue_items(NumItems, Size, Queue, Blocked, DequeuedAcc) ->
     end,
     dequeue_items(
         NumItems - 1, Size - ItemSize, Queue2, Blocked2, [Item | DequeuedAcc]).
-    
+
 
 handle_cast(close, #q{items = 0} = Q) ->
     {stop, normal, Q};

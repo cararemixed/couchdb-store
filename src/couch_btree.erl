@@ -17,7 +17,7 @@
 -export([fold_reduce/4, lookup/2, get_state/1, set_options/2]).
 -export([extract/2, assemble/3, less/3]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 extract(#btree{extract_kv=undefined}, Value) ->
     Value;

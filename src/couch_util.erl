@@ -33,7 +33,7 @@
 -export([integer_to_boolean/1, boolean_to_integer/1]).
 -export([find_in_binary/2]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 % arbitrarily chosen amount of memory to use before flushing to disk
 -define(FLUSH_MAX_MEM, 10000000).

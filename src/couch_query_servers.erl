@@ -23,7 +23,7 @@
 % For 210-os-proc-pool.t
 -export([get_os_process/1, ret_os_process/1]).
 
--include_lib("couch/include/couch_db.hrl").
+-include_lib("couch_store/include/couch_db.hrl").
 
 -define(SUMERROR, <<"The _sum function requires that map values be numbers, "
     "arrays of numbers, or objects, not '~p'. Objects cannot be mixed with other "
