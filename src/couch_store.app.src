@@ -10,7 +10,7 @@
 % License for the specific language governing permissions and limitations under
 % the License.
 
-{application, couch, [
+{application, couch_store, [
     {description, "Apache CouchDB Storage Engine"},
     {vsn, git},
     {registered, [
